@@ -25,7 +25,8 @@ const ProductSchema = new Schema({
     type: [String]
   },
   DateCreated: {
-    type: Date
+    type: Date,
+    default: new Date()
   },
   CreatedBy: {
     type: String
