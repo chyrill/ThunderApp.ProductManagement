@@ -266,7 +266,7 @@ export async function search(req,res){
 
     var pages = Math.ceil(allProduct.length/req.query.limit);
     var totalcount = allProduct.length;
-    var productRes = await Product.find(filters).skip(Number(req.query.skip)).limit(Number(req.query.limit));
+    var productRes = await Product.find(filters).skip(Number(req.query.skip)).limit(Number(req.query.limit)).sort(req.query.sort);
 
     if (productRes.length < 1) {
       result.items = productRes;

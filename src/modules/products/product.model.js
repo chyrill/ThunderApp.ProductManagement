@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import validator from 'validator'
+import validator from 'validator';
 
 const ProductSchema = new Schema({
   Name : {
@@ -18,11 +18,23 @@ const ProductSchema = new Schema({
   Context: {
     type: String
   },
+  Category: {
+    type: String
+  },
+  ProductType: {
+    type: String
+  },
+  OtherInformation: {
+    type: Object
+  },
   SKU: {
     type: String
   },
   Images: {
     type: [String]
+  },
+  Price: {
+    type: Object
   },
   DateCreated: {
     type: Date,
