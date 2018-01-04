@@ -236,7 +236,6 @@ export async function search(req,res){
   var result = new SearchResult();
 
   try{
-
     var authRes =await Authorization(req.headers.authorization);
 
     if (authRes.successful!=true){

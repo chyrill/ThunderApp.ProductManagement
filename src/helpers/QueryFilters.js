@@ -5,13 +5,16 @@ export function QueryFilters (filters,context){
 
   var data = request.split(',');
 
+  console.log(request);
+
   for (var i in data){
 
     var propertyName  = data[i].split(':')[0];
     var value = data[i].split(':')[1];
-    if(value.indexOf('/')>-1){
+    console.log(value.indexOf('/'));
+    if(value.indexOf('/')===0){
       var item = value.replace('/','').replace('/','');
-      console.log(item);
+      console.log('hey');
       result[propertyName] = new RegExp(item,"i");
     }
     else{
