@@ -51,14 +51,15 @@ export async function create(req,res) {
 }
 
 export async function getAll(req,res) {
-  var searchResult = new SearchResult();
+  var result = new SearchResult();
 
   try{
 
+    console.log(req.headers.authorization);
     var authRes =await Authorization(req.headers.authorization);
 
     if (authRes.successful!=true){
-      result.model = req.body;
+      result.items = null;
       result.message = authRes.message;
       result.successful = false;
       return res.status(401).json(result);
@@ -67,7 +68,7 @@ export async function getAll(req,res) {
       req.body.Context = authRes.model.Context;
       req.body.CreatedBy = authRes.model.Name;
     }
-
+    console.log(req.body)
     var searchRes  = await Category.find({Context:req.body.Context});
 
     result.items = searchRes;

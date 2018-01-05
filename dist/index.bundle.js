@@ -165,8 +165,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 async function Authorization(bearer) {
   var data = {};
+  var result = new _Result2.default();
   try {
-    var authCode = bearer.split(" ")[1];
+    var authCode = bearer.split(' ')[1];
     await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
       data = response.data;
     }).catch(err => {
@@ -373,6 +374,7 @@ exports.default = app => {
   app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    res.header("Access-Control-Allow-Methods", "*");
     next();
   });
   app.use('/api/v1/products', _product2.default);
@@ -935,14 +937,15 @@ async function create(req, res) {
 }
 
 async function getAll(req, res) {
-  var searchResult = new _SearchResult2.default();
+  var result = new _SearchResult2.default();
 
   try {
 
+    console.log(req.headers.authorization);
     var authRes = await (0, _Authorization.Authorization)(req.headers.authorization);
 
     if (authRes.successful != true) {
-      result.model = req.body;
+      result.items = null;
       result.message = authRes.message;
       result.successful = false;
       return res.status(401).json(result);
@@ -950,7 +953,7 @@ async function getAll(req, res) {
       req.body.Context = authRes.model.Context;
       req.body.CreatedBy = authRes.model.Name;
     }
-
+    console.log(req.body);
     var searchRes = await _categories2.default.find({ Context: req.body.Context });
 
     result.items = searchRes;
