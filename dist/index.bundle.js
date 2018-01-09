@@ -104,33 +104,33 @@ exports.default = Result;
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 const devConfig = {
-  MONGO_URL: 'mongodb://localhost/productManagement-dev'
+    MONGO_URL: 'mongodb://localhost/productManagement-dev'
 };
 
 const testConfig = {
-  MONGO_URL: 'mongodb://localhost/productManagement-test'
+    MONGO_URL: 'mongodb://localhost/productManagement-test'
 };
 
 const prodConfig = {
-  MONGO_URL: 'mongodb://localhost/productManagement'
+    MONGO_URL: 'mongodb://localhost/productManagement'
 };
 
 const defaultConfig = {
-  PORT: process.env.PORT || 3001
+    PORT: process.env.PORT || 3001
 };
 
 function envConfig(env) {
-  switch (env) {
-    case 'development':
-      return devConfig;
-    case 'test':
-      return testConfig;
-    default:
-      return prodConfig;
-  }
+    switch (env) {
+        case 'development':
+            return devConfig;
+        case 'test':
+            return testConfig;
+        default:
+            return prodConfig;
+    }
 }
 
 exports.default = Object.assign({}, defaultConfig, envConfig(process.env.NODE_ENV));
@@ -282,13 +282,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 _mongoose2.default.Promise = global.Promise;
 
 try {
-  _mongoose2.default.connect(_constants2.default.MONGO_URL);
+    _mongoose2.default.connect(_constants2.default.MONGO_URL);
 } catch (err) {
-  _mongoose2.default.createConnection(_constants2.default.MONGO_URL);
+    _mongoose2.default.createConnection(_constants2.default.MONGO_URL);
 }
 
 _mongoose2.default.connection.once('open', () => console.log('MongoDB running')).on('error', e => {
-  throw e;
+    throw e;
 });
 
 /***/ }),
@@ -299,7 +299,7 @@ _mongoose2.default.connection.once('open', () => console.log('MongoDB running'))
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 
 var _morgan = __webpack_require__(10);
@@ -324,16 +324,16 @@ const isDev = process.env.NODE_ENV === 'development';
 const isProd = process.env.NODE_ENV === 'production';
 
 exports.default = app => {
-  if (isProd) {
-    app.use((0, _compression2.default)());
-    app.use(helmet());
-  }
-  app.use(_bodyParser2.default.json());
-  app.use(_bodyParser2.default.urlencoded({ extended: true }));
+    if (isProd) {
+        app.use((0, _compression2.default)());
+        app.use(helmet());
+    }
+    app.use(_bodyParser2.default.json());
+    app.use(_bodyParser2.default.urlencoded({ extended: true }));
 
-  if (isDev) {
-    app.use((0, _morgan2.default)('dev'));
-  }
+    if (isDev) {
+        app.use((0, _morgan2.default)('dev'));
+    }
 };
 
 /***/ }),
@@ -368,7 +368,7 @@ module.exports = require("helmet");
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 
 var _product = __webpack_require__(15);
@@ -382,14 +382,14 @@ var _categories2 = _interopRequireDefault(_categories);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = app => {
-  app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-    res.header("Access-Control-Allow-Methods", "*");
-    next();
-  });
-  app.use('/api/v1/products', _product2.default);
-  app.use('/api/v1/category', _categories2.default);
+    app.use(function (req, res, next) {
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+        res.header("Access-Control-Allow-Methods", "*");
+        next();
+    });
+    app.use('/api/v1/products', _product2.default);
+    app.use('/api/v1/category', _categories2.default);
 };
 
 /***/ }),
@@ -536,19 +536,6 @@ let getById = exports.getById = (() => {
 
         try {
 
-            var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
-
-            if (authRes.successful != true) {
-                result.model = null;
-                result.message = authRes.message;
-                result.successful = false;
-                console.log(response);
-                return res.status(401).json(result);
-            } else {
-                req.body.Context = authRes.model.Context;
-                req.body.CreatedBy = authRes.model.Name;
-            }
-
             var id = req.params.id;
 
             if (id === null) {
@@ -559,7 +546,7 @@ let getById = exports.getById = (() => {
                 return res.status(404).json(result);
             }
 
-            var productRes = yield _product2.default.findOne({ _id: id, Context: req.body.Context });
+            var productRes = yield _product2.default.findOne({ _id: id, Context: req.query.Context });
 
             if (productRes === null) {
                 result.model = null;
@@ -684,27 +671,15 @@ let search = exports.search = (() => {
 
         var result = new _SearchResult2.default();
         try {
-            var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
-
-            if (authRes.successful != true) {
-                result.items = null;
-                result.message = authRes.message;
-                result.successful = false;
-
-                return res.status(401).json(result);
-            } else {
-                req.body.Context = authRes.model.Context;
-                req.body.CreatedBy = authRes.model.Name;
-            }
 
             if (req.query.limit === null || req.query.limit === undefined) {
                 req.query.limit = 20;
             }
             var filters = {};
             if (req.query.Filters != null) {
-                filters = (0, _QueryFilters.QueryFilters)(req.query.Filters, req.body.Context);
+                filters = (0, _QueryFilters.QueryFilters)(req.query.Filters, req.query.Context);
             } else {
-                filters["Context"] = req.body.Context;
+                filters["Context"] = req.query.Context;
             }
 
             var allProduct = yield _product2.default.find(filters);
@@ -868,9 +843,7 @@ function QueryFilters(filters, context) {
         var value = data[i].split(':')[1];
         if (value.indexOf('/') === 0) {
             var item = value.replace('/', '').replace('/', '');
-            if (item === '') {
-                console.log('shit this');
-            } else {
+            if (item === '') {} else {
                 result[propertyName] = new RegExp(item, "i");
             }
         } else {
@@ -917,101 +890,88 @@ exports.default = routes;
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 exports.getAll = exports.create = undefined;
 
 let create = exports.create = (() => {
-  var _ref = _asyncToGenerator(function* (req, res) {
+    var _ref = _asyncToGenerator(function* (req, res) {
 
-    var result = new _Result2.default();
+        var result = new _Result2.default();
 
-    try {
-      var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
+        try {
+            var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
 
-      if (authRes.successful != true) {
-        result.model = req.body;
-        result.message = authRes.message;
-        result.successful = false;
-        return res.status(401).json(result);
-      } else {
-        req.body.Context = authRes.model.Context;
-        req.body.CreatedBy = authRes.model.Name;
-      }
+            if (authRes.successful != true) {
+                result.model = req.body;
+                result.message = authRes.message;
+                result.successful = false;
+                return res.status(401).json(result);
+            } else {
+                req.body.Context = authRes.model.Context;
+                req.body.CreatedBy = authRes.model.Name;
+            }
 
-      var searchCategoryRes = yield _categories2.default.find({ Name: req.body.Name });
+            var searchCategoryRes = yield _categories2.default.find({ Name: req.body.Name });
 
-      if (searchCategoryRes.length > 0) {
-        result.model = req.body;
-        result.message = "Category already Existed";
-        result.successful = false;
+            if (searchCategoryRes.length > 0) {
+                result.model = req.body;
+                result.message = "Category already Existed";
+                result.successful = false;
 
-        return res.status(400).json(result);
-      }
+                return res.status(400).json(result);
+            }
 
-      var categoryRes = yield _categories2.default.create(req.body);
+            var categoryRes = yield _categories2.default.create(req.body);
 
-      result.model = categoryRes;
-      result.message = "Successfully created category";
-      result.successful = true;
+            result.model = categoryRes;
+            result.message = "Successfully created category";
+            result.successful = true;
 
-      return res.status(200).json(result);
-    } catch (e) {
-      result.model = req.body;
-      result.message = e.errmsg;
-      result.successful = false;
+            return res.status(200).json(result);
+        } catch (e) {
+            result.model = req.body;
+            result.message = e.errmsg;
+            result.successful = false;
 
-      return res.status(500).json(result);
-    }
-  });
+            return res.status(500).json(result);
+        }
+    });
 
-  return function create(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
+    return function create(_x, _x2) {
+        return _ref.apply(this, arguments);
+    };
 })();
 
 let getAll = exports.getAll = (() => {
-  var _ref2 = _asyncToGenerator(function* (req, res) {
-    var result = new _SearchResult2.default();
+    var _ref2 = _asyncToGenerator(function* (req, res) {
+        var result = new _SearchResult2.default();
 
-    try {
+        try {
 
-      console.log(req.headers.authorization);
-      var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
+            var searchRes = yield _categories2.default.find({ Context: req.query.Context });
 
-      if (authRes.successful != true) {
-        result.items = null;
-        result.message = authRes.message;
-        result.successful = false;
-        return res.status(401).json(result);
-      } else {
-        req.body.Context = authRes.model.Context;
-        req.body.CreatedBy = authRes.model.Name;
-      }
-      console.log(req.body);
-      var searchRes = yield _categories2.default.find({ Context: req.body.Context });
+            result.items = searchRes;
+            result.pages = 1;
+            result.totalcount = searchRes.length;
+            result.message = 'Successfully retrieve data';
+            result.successful = true;
 
-      result.items = searchRes;
-      result.pages = 1;
-      result.totalcount = searchRes.length;
-      result.message = 'Successfully retrieve data';
-      result.successful = true;
+            return res.status(200).json(result);
+        } catch (e) {
+            result.items = null;
+            result.pages = 0;
+            result.totalcount = 0;
+            result.message = e.errmsg;
+            result.successful = false;
 
-      return res.status(200).json(result);
-    } catch (e) {
-      result.items = null;
-      result.pages = 0;
-      result.totalcount = 0;
-      result.message = e.errmsg;
-      result.successful = false;
+            return res.status(500).json(result);
+        }
+    });
 
-      return res.status(500).json(result);
-    }
-  });
-
-  return function getAll(_x3, _x4) {
-    return _ref2.apply(this, arguments);
-  };
+    return function getAll(_x3, _x4) {
+        return _ref2.apply(this, arguments);
+    };
 })();
 
 var _Result = __webpack_require__(2);

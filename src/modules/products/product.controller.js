@@ -94,19 +94,6 @@ export async function getById(req, res) {
 
     try {
 
-        var authRes = await Authorization(req.headers.authorization);
-
-        if (authRes.successful != true) {
-            result.model = null;
-            result.message = authRes.message;
-            result.successful = false;
-            console.log(response);
-            return res.status(401).json(result);
-        } else {
-            req.body.Context = authRes.model.Context;
-            req.body.CreatedBy = authRes.model.Name;
-        }
-
         var id = req.params.id;
 
         if (id === null) {
@@ -117,7 +104,7 @@ export async function getById(req, res) {
             return res.status(404).json(result);
         }
 
-        var productRes = await Product.findOne({ _id: id, Context: req.body.Context });
+        var productRes = await Product.findOne({ _id: id, Context: req.query.Context });
 
         if (productRes === null) {
             result.model = null;
@@ -225,28 +212,16 @@ export async function search(req, res) {
 
     var result = new SearchResult();
     try {
-        var authRes = await Authorization(req.headers.authorization);
 
-
-        if (authRes.successful != true) {
-            result.items = null;
-            result.message = authRes.message;
-            result.successful = false;
-
-            return res.status(401).json(result);
-        } else {
-            req.body.Context = authRes.model.Context;
-            req.body.CreatedBy = authRes.model.Name;
-        }
 
         if (req.query.limit === null || req.query.limit === undefined) {
             req.query.limit = 20;
         }
         var filters = {}
         if (req.query.Filters != null) {
-            filters = QueryFilters(req.query.Filters, req.body.Context);
+            filters = QueryFilters(req.query.Filters, req.query.Context);
         } else {
-            filters["Context"] = req.body.Context;
+            filters["Context"] = req.query.Context;
         }
 
         var allProduct = await Product.find(filters);

@@ -14,7 +14,7 @@ export function QueryFilters(filters, context) {
         if (value.indexOf('/') === 0) {
             var item = value.replace('/', '').replace('/', '');
             if (item === '') {
-                console.log('shit this');
+
             } else {
                 result[propertyName] = new RegExp(item, "i");
             }
