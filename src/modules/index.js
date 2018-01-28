@@ -1,5 +1,6 @@
 import productRoutes from './products/product.routes';
 import categoryRoutes from './categories/categories.routes';
+import specificationRoutes from './specification/specification.routes';
 
 export default app => {
     app.use(function(req, res, next) {
@@ -10,4 +11,5 @@ export default app => {
     });
     app.use('/api/v1/products', productRoutes);
     app.use('/api/v1/category', categoryRoutes);
+    app.use('/api/v1/specification', specificationRoutes);
 };
