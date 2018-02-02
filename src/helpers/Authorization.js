@@ -6,9 +6,8 @@ export async function Authorization(bearer) {
     var result = new Result();
     try {
         var authCode = bearer.split(' ')[1];
-        await axios.post('http://3c101b9b.ngrok.io/api/v1/userLogin/authorize', { Authorization: authCode })
+        await axios.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode })
             .then(response => {
-                console.log(response.data)
                 data = response.data;
             })
             .catch(err => {
@@ -17,7 +16,6 @@ export async function Authorization(bearer) {
             });
         return data;
     } catch (e) {
-        console.log(e);
         result.message = e;
         result.successful = false;
         return result;

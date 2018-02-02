@@ -202,8 +202,7 @@ async function Authorization(bearer) {
     var result = new _Result2.default();
     try {
         var authCode = bearer.split(' ')[1];
-        await _axios2.default.post('http://3c101b9b.ngrok.io/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
-            console.log(response.data);
+        await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
             data = response.data;
         }).catch(err => {
 
@@ -211,7 +210,6 @@ async function Authorization(bearer) {
         });
         return data;
     } catch (e) {
-        console.log(e);
         result.message = e;
         result.successful = false;
         return result;
@@ -485,6 +483,10 @@ var _specification = __webpack_require__(23);
 
 var _specification2 = _interopRequireDefault(_specification);
 
+var _purchaseorder = __webpack_require__(26);
+
+var _purchaseorder2 = _interopRequireDefault(_purchaseorder);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = app => {
@@ -497,6 +499,7 @@ exports.default = app => {
     app.use('/api/v1/products', _product2.default);
     app.use('/api/v1/category', _categories2.default);
     app.use('/api/v1/specification', _specification2.default);
+    app.use('/api/v1/purchaseorder', _purchaseorder2.default);
 };
 
 /***/ }),
@@ -1381,6 +1384,384 @@ const SpecificationSchema = new _mongoose.Schema({
 });
 
 exports.default = _mongoose2.default.model('Specifications', SpecificationSchema);
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _express = __webpack_require__(0);
+
+var _purchaseorder = __webpack_require__(27);
+
+var PurchaseOrderController = _interopRequireWildcard(_purchaseorder);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const routes = new _express.Router();
+
+routes.post('', PurchaseOrderController.create);
+routes.get('/:id', PurchaseOrderController.getById);
+routes.get('/all', PurchaseOrderController.searchAll);
+routes.get('', PurchaseOrderController.search);
+routes.put('', PurchaseOrderController.update);
+routes.delete('/:id', PurchaseOrderController.remove);
+
+exports.default = routes;
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.create = create;
+exports.update = update;
+exports.remove = remove;
+exports.getById = getById;
+exports.searchAll = searchAll;
+exports.search = search;
+
+var _Result = __webpack_require__(2);
+
+var _Result2 = _interopRequireDefault(_Result);
+
+var _SearchResult = __webpack_require__(6);
+
+var _SearchResult2 = _interopRequireDefault(_SearchResult);
+
+var _Authorization = __webpack_require__(5);
+
+var _QueryFilters = __webpack_require__(8);
+
+var _purchaseorder = __webpack_require__(28);
+
+var _purchaseorder2 = _interopRequireDefault(_purchaseorder);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+async function create(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+        var purchaseOrderItem = await _purchaseorder2.default.find({ QuotationId: req.body.QuotationId });
+
+        if (purchaseOrderItem > 0) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = 'Quotation has been already purchased';
+
+            return res.status(400).json(result);
+        }
+
+        req.body['Status'] = 'New';
+
+        var purchaseOrderNo = new Date().getYear() + '-' + Math.round(new Date().getTime() / 1000);
+
+        req.body['PurchaseOrderNo'] = purchaseOrderNo;
+
+        var createRes = await _purchaseorder2.default.create(req.body);
+
+        result.successful = true;
+        result.model = createRes;
+        result.message = 'Successfully created record';
+
+        return res.status(200).json(result);
+    } catch (e) {
+        console.log(e);
+        result.successful = false;
+        result.model = req.body;
+        result.message = e.errmsg;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function update(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            return res.status(401).json(result);
+        } else {
+            req.body.DateUpdated = new Date();
+            req.body.UpdatedBy = authenticationRes.model.Name;
+        }
+
+        var updateRes = await _purchaseorder2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { Upsert: true, strict: false });
+
+        result.successful = true;
+        result.model = updateRes;
+        result.message = 'Successfully updated record';
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.successful = false;
+        result.model = req.body;
+        result.message = e.errmsg;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function remove(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var id = req.params.id;
+
+        if (id === null || id === undefined) {
+            result.successful = false;
+            result.model = null;
+            result.message = 'Id is required';
+
+            return res.status(400).json(result);
+        }
+
+        await _purchaseorder2.default.findOneAndRemove({ _id: id });
+
+        result.successful = true;
+        result.model = null;
+        result.message = 'Successfully remove record';
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.successful = false;
+        result.model = null;
+        result.message = e.errmsg;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function getById(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var id = req.params.id;
+
+        if (id === undefined || id === null) {
+            result.successful = false;
+            result.model = null;
+            result.message = 'Id is required';
+
+            return res.status(400).json(result);
+        }
+
+        var itemRes = await _purchaseorder2.default.findOne({ _id: id });
+
+        result.successful = true;
+        result.model = itemRes;
+        result.message = 'Successfully retrieve record';
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.successful = false;
+        result.model = null;
+        result.message = e.errmsg;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function searchAll(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var itemsRes = await _purchaseorder2.default.find({ Context: req.body.Context });
+
+        result.items = itemRes;
+        result.totalcount = itemRes.length;
+        result.pages = 1;
+        result.message = 'Successfully retrieve records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = 0;
+        result.totalcount = 0;
+        result.pages = 1;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function search(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        if (req.query.limit === null || req.query.limit === undefined) {
+            req.query.limit = 20;
+        }
+        var filters = {};
+        if (req.query.Filters != null) {
+            filters = (0, _QueryFilters.QueryFilters)(req.query.Filters, req.query.Context);
+        } else {
+            filters["Context"] = req.query.Context;
+        }
+
+        var itemRes = await _purchaseorder2.default.find(filters);
+
+        var totalcount = itemRes.length;
+        var pages = Math.ceil(itemRes.length / req.query.limit);
+
+        var finalItemRes = await _purchaseorder2.default.find(filters).skip(Number(req.query.skip)).limit(Number(req.query.limit)).sort(req.query.sort);
+
+        result.items = finalItemRes;
+        result.totalcount = totalcount;
+        result.pages = pages;
+        result.message = 'Successfully retrieve records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = 0;
+        result.totalcount = 0;
+        result.pages = 1;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _mongoose = __webpack_require__(1);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+var _validator = __webpack_require__(4);
+
+var _validator2 = _interopRequireDefault(_validator);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const PurchaseOrderSchema = new _mongoose.Schema({
+    PurchaseOrderNo: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    QuotationId: {
+        type: String
+    },
+    CustomerName: {
+        type: String
+    },
+    CompanyName: {
+        type: String
+    },
+    Items: {
+        type: []
+    },
+    Status: {
+        type: String
+    },
+    TotalAmount: {
+        type: Number
+    },
+    DateCreated: {
+        type: Date,
+        default: new Date()
+    },
+    CreatedBy: {
+        type: String
+    },
+    DateUpdated: {
+        type: Date
+    },
+    UpdatedBy: {
+        type: String
+    }
+});
+
+exports.default = _mongoose2.default.model('PurchaseOrder', PurchaseOrderSchema);
 
 /***/ })
 /******/ ]);
