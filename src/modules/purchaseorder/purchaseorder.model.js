@@ -14,7 +14,13 @@ const PurchaseOrderSchema = new Schema({
     CustomerName: {
         type: String
     },
+    Context: {
+        type: String
+    },
     CompanyName: {
+        type: String
+    },
+    UserId: {
         type: String
     },
     Items: {
