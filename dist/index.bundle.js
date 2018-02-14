@@ -106,12 +106,120 @@ exports.default = Result;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.Authorization = Authorization;
+
+var _axios = __webpack_require__(19);
+
+var _axios2 = _interopRequireDefault(_axios);
+
+var _Result = __webpack_require__(2);
+
+var _Result2 = _interopRequireDefault(_Result);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+async function Authorization(bearer) {
+    var data = {};
+    var result = new _Result2.default();
+    try {
+        var authCode = bearer.split(' ')[1];
+        await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
+            data = response.data;
+        }).catch(err => {
+
+            data = err.response.data;
+        });
+        return data;
+    } catch (e) {
+        result.message = e;
+        result.successful = false;
+        return result;
+    }
+};
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+class SearchResult {
+    constructor(items, totalcount, pages, message, successful) {
+        this.items = items;
+        this.totalcount = totalcount;
+        this.pages = pages;
+        this.message = message;
+        this.successful = successful;
+    }
+}
+
+exports.default = SearchResult;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+module.exports = require("validator");
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.QueryFilters = QueryFilters;
+function QueryFilters(filters, context) {
+
+    var request = JSON.parse(JSON.stringify(filters));
+    var result = {};
+
+    var data = request.split(',');
+
+    console.log(request);
+
+    for (var i in data) {
+
+        var propertyName = data[i].split(':')[0];
+        var value = data[i].split(':')[1];
+        if (value.indexOf('/') === 0) {
+            var item = value.replace('/', '').replace('/', '');
+            if (item === '') {} else {
+                result[propertyName] = new RegExp(item, "i");
+            }
+        } else {
+            result[propertyName] = value;
+        }
+    }
+
+    result["Context"] = context;
+    console.log(result);
+    return result;
+};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
 var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(4);
+var _validator = __webpack_require__(5);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -170,76 +278,7 @@ const ProductSchema = new _mongoose.Schema({
 exports.default = _mongoose2.default.model('Product', ProductSchema);
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-module.exports = require("validator");
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Authorization = Authorization;
-
-var _axios = __webpack_require__(19);
-
-var _axios2 = _interopRequireDefault(_axios);
-
-var _Result = __webpack_require__(2);
-
-var _Result2 = _interopRequireDefault(_Result);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-async function Authorization(bearer) {
-    var data = {};
-    var result = new _Result2.default();
-    try {
-        var authCode = bearer.split(' ')[1];
-        await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
-            data = response.data;
-        }).catch(err => {
-
-            data = err.response.data;
-        });
-        return data;
-    } catch (e) {
-        result.message = e;
-        result.successful = false;
-        return result;
-    }
-};
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-class SearchResult {
-    constructor(items, totalcount, pages, message, successful) {
-        this.items = items;
-        this.totalcount = totalcount;
-        this.pages = pages;
-        this.message = message;
-        this.successful = successful;
-    }
-}
-
-exports.default = SearchResult;
-
-/***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -278,45 +317,6 @@ function envConfig(env) {
 exports.default = Object.assign({}, defaultConfig, envConfig(process.env.NODE_ENV));
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.QueryFilters = QueryFilters;
-function QueryFilters(filters, context) {
-
-    var request = JSON.parse(JSON.stringify(filters));
-    var result = {};
-
-    var data = request.split(',');
-
-    console.log(request);
-
-    for (var i in data) {
-
-        var propertyName = data[i].split(':')[0];
-        var value = data[i].split(':')[1];
-        if (value.indexOf('/') === 0) {
-            var item = value.replace('/', '').replace('/', '');
-            if (item === '') {} else {
-                result[propertyName] = new RegExp(item, "i");
-            }
-        } else {
-            result[propertyName] = value;
-        }
-    }
-
-    result["Context"] = context;
-    console.log(result);
-    return result;
-};
-
-/***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -327,7 +327,7 @@ var _express = __webpack_require__(0);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _constants = __webpack_require__(7);
+var _constants = __webpack_require__(8);
 
 var _constants2 = _interopRequireDefault(_constants);
 
@@ -350,16 +350,16 @@ const app = (0, _express2.default)();
 (0, _modules2.default)(app);
 
 app.listen(_constants2.default.PORT, err => {
-  if (err) {
-    throw err;
-  } else {
-    console.log(`
+    if (err) {
+        throw err;
+    } else {
+        console.log(`
       Server running on PORT: ${_constants2.default.PORT}
       ==================================
       Running on ${process.env.NODE_ENV}
       ==================================
       `);
-  }
+    }
 });
 
 /***/ }),
@@ -373,7 +373,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _constants = __webpack_require__(7);
+var _constants = __webpack_require__(8);
 
 var _constants2 = _interopRequireDefault(_constants);
 
@@ -487,6 +487,10 @@ var _purchaseorder = __webpack_require__(26);
 
 var _purchaseorder2 = _interopRequireDefault(_purchaseorder);
 
+var _delivery = __webpack_require__(29);
+
+var _delivery2 = _interopRequireDefault(_delivery);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = app => {
@@ -500,6 +504,7 @@ exports.default = app => {
     app.use('/api/v1/category', _categories2.default);
     app.use('/api/v1/specification', _specification2.default);
     app.use('/api/v1/purchaseorder', _purchaseorder2.default);
+    app.use('/api/v1/delivery', _delivery2.default);
 };
 
 /***/ }),
@@ -549,21 +554,21 @@ exports.remove = remove;
 exports.update = update;
 exports.search = search;
 
-var _product = __webpack_require__(3);
+var _product = __webpack_require__(7);
 
 var _product2 = _interopRequireDefault(_product);
 
-var _Authorization = __webpack_require__(5);
+var _Authorization = __webpack_require__(3);
 
 var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(6);
+var _SearchResult = __webpack_require__(4);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _QueryFilters = __webpack_require__(8);
+var _QueryFilters = __webpack_require__(6);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -866,17 +871,17 @@ var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(6);
+var _SearchResult = __webpack_require__(4);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _Authorization = __webpack_require__(5);
+var _Authorization = __webpack_require__(3);
 
 var _categories = __webpack_require__(22);
 
 var _categories2 = _interopRequireDefault(_categories);
 
-var _product = __webpack_require__(3);
+var _product = __webpack_require__(7);
 
 var _product2 = _interopRequireDefault(_product);
 
@@ -1048,7 +1053,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(4);
+var _validator = __webpack_require__(5);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -1125,19 +1130,19 @@ var _specification = __webpack_require__(25);
 
 var _specification2 = _interopRequireDefault(_specification);
 
-var _Authorization = __webpack_require__(5);
+var _Authorization = __webpack_require__(3);
 
 var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(6);
+var _SearchResult = __webpack_require__(4);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _QueryFilters = __webpack_require__(8);
+var _QueryFilters = __webpack_require__(6);
 
-var _product = __webpack_require__(3);
+var _product = __webpack_require__(7);
 
 var _product2 = _interopRequireDefault(_product);
 
@@ -1356,7 +1361,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(4);
+var _validator = __webpack_require__(5);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -1436,13 +1441,13 @@ var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(6);
+var _SearchResult = __webpack_require__(4);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _Authorization = __webpack_require__(5);
+var _Authorization = __webpack_require__(3);
 
-var _QueryFilters = __webpack_require__(8);
+var _QueryFilters = __webpack_require__(6);
 
 var _purchaseorder = __webpack_require__(28);
 
@@ -1716,7 +1721,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(4);
+var _validator = __webpack_require__(5);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -1734,7 +1739,13 @@ const PurchaseOrderSchema = new _mongoose.Schema({
     CustomerName: {
         type: String
     },
+    Context: {
+        type: String
+    },
     CompanyName: {
+        type: String
+    },
+    UserId: {
         type: String
     },
     Items: {
@@ -1762,6 +1773,320 @@ const PurchaseOrderSchema = new _mongoose.Schema({
 });
 
 exports.default = _mongoose2.default.model('PurchaseOrder', PurchaseOrderSchema);
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _express = __webpack_require__(0);
+
+var _delivery = __webpack_require__(30);
+
+var DeliveryController = _interopRequireWildcard(_delivery);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const routes = new _express.Router();
+
+routes.post('', DeliveryController.create);
+routes.put('', DeliveryController.update);
+routes.delete('/:id', DeliveryController.remove);
+routes.get('', DeliveryController.search);
+routes.get('/:id', DeliveryController.getById);
+
+exports.default = routes;
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.create = create;
+exports.update = update;
+exports.remove = remove;
+exports.getById = getById;
+exports.search = search;
+
+var _Result = __webpack_require__(2);
+
+var _Result2 = _interopRequireDefault(_Result);
+
+var _SearchResult = __webpack_require__(4);
+
+var _SearchResult2 = _interopRequireDefault(_SearchResult);
+
+var _Authorization = __webpack_require__(3);
+
+var _QueryFilters = __webpack_require__(6);
+
+var _delivery = __webpack_require__(31);
+
+var _delivery2 = _interopRequireDefault(_delivery);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+async function create(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        req.body['Status'] = 'New';
+
+        var createRes = await _delivery2.default.create(req.body);
+
+        result.message = 'Successfully created record';
+        result.successful = true;
+        result.model = createRes;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = req.body;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function update(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.UpdatedBy = authenticationRes.model.Name;
+            req.body.DateUpdated = new Date();
+        }
+
+        var updateRes = await _delivery2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { Upsert: true, strict: false });
+
+        result.message = 'Successfully updated record';
+        result.successful = true;
+        result.model = updateRes;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = req.body;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function remove(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var id = req.params.id;
+
+        if (id === null || id === undefined) {
+            result.message = 'Id is required';
+            result.successful = false;
+            result.model = null;
+
+            return res.status(400).json(result);
+        }
+
+        await _delivery2.default.findOneAndRemove({ _id: id });
+
+        result.message = 'Successfully deleted record';
+        result.successful = true;
+        result.model = null;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = null;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function getById(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var id = req.params.id;
+
+        if (id === null || id === undefined) {
+            result.message = 'Id is required';
+            result.successful = false;
+            result.model = null;
+
+            return res.status(400).json(result);
+        }
+
+        var itemRes = await _delivery2.default.findOne({ _id: id });
+
+        result.message = 'Successfully retreive record';
+        result.successful = true;
+        result.model = itemRes;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = null;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function search(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        if (req.query.limit === null || req.query.limit === undefined) {
+            req.query.limit = 20;
+        }
+        var filters = {};
+        if (req.query.Filters != null) {
+            filters = (0, _QueryFilters.QueryFilters)(req.query.Filters, req.body.Context);
+        } else {
+            filters["Context"] = req.body.Context;
+        }
+
+        var searchItemRes = await _delivery2.default.find(filters);
+
+        var totalcount = searchItemRes.length;
+        var pages = Math.ceil(searchItemRes.length / req.query.limit);
+
+        var finalItemRes = await _delivery2.default.find(filters).skip(Number(req.query.skip)).limit(Number(req.query.limit)).sort(req.query.sort);
+
+        result.items = finalItemRes;
+        result.totalcount = totalcount;
+        result.pages = pages;
+        result.message = 'Successfully retreive records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = 0;
+        result.totalcount = 0;
+        result.pages = 0;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _mongoose = __webpack_require__(1);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+var _validator = __webpack_require__(5);
+
+var _validator2 = _interopRequireDefault(_validator);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const DeliverySchema = new _mongoose.Schema({
+    DeliveryReceiptId: {
+        type: String,
+        required: [true, 'Delivery Receipt Id is required']
+    },
+    Context: {
+        type: String
+    },
+    Items: {
+        type: [Object]
+    },
+    Status: {
+        type: String
+    },
+    DateDelivered: {
+        type: Date
+    },
+    DateCreated: {
+        type: Date,
+        default: new Date()
+    },
+    CreatedBy: {
+        type: String
+    }
+});
+
+exports.default = _mongoose2.default.model('Delivery', DeliverySchema);
 
 /***/ })
 /******/ ]);

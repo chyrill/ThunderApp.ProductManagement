@@ -10,16 +10,15 @@ middlewaresConfig(app);
 
 apiRoutes(app);
 
-app.listen(constants.PORT, err =>{
-  if(err){
-    throw err;
-  }
-  else {
-    console.log(`
+app.listen(constants.PORT, err => {
+    if (err) {
+        throw err;
+    } else {
+        console.log(`
       Server running on PORT: ${constants.PORT}
       ==================================
       Running on ${process.env.NODE_ENV}
       ==================================
       `)
-  }
+    }
 });
