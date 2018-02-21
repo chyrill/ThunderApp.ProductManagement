@@ -226,13 +226,13 @@ export async function search(req, res) {
         }
         var filters = {}
         if (req.query.Filters != null) {
-            filters = QueryFilters(req.query.Filters, req.query.Context);
+            filters = QueryFilters(req.query.Filters, req.body.Context);
         } else {
-            filters["Context"] = req.query.Context;
+            filters["Context"] = req.body.Context;
         }
 
         var itemRes = await PurchaseOrder.find(filters);
-
+        console.log(itemRes)
         var totalcount = itemRes.length;
         var pages = Math.ceil(itemRes.length / req.query.limit);
 
@@ -249,6 +249,42 @@ export async function search(req, res) {
         result.items = 0;
         result.totalcount = 0;
         result.pages = 1;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+export async function getByUserIdNew(req, res) {
+    var result = new SearchResult();
+
+    try {
+        var authenticationRes = await Authorization(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var searchItem = await PurchaseOrder.find({ Context: req.body.Context, UserId: req.params.id, Status: { $ne: 'Completed' } })
+
+        result.items = searchItem;
+        result.totalcount = searchItem.length;
+        result.pages = 1;
+        result.message = 'Successfully retrieve records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = null;
+        result.totalcount = null;
+        result.pages = 0;
         result.message = e.errmsg;
         result.successful = false;
 

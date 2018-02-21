@@ -9,5 +9,6 @@ routes.get('/all', PurchaseOrderController.searchAll);
 routes.get('', PurchaseOrderController.search);
 routes.put('', PurchaseOrderController.update);
 routes.delete('/:id', PurchaseOrderController.remove);
+routes.get('/all/:id', PurchaseOrderController.getByUserIdNew);
 
 export default routes;

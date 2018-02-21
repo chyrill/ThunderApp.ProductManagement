@@ -98,6 +98,12 @@ exports.default = Result;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("validator");
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -138,7 +144,7 @@ async function Authorization(bearer) {
 };
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -158,12 +164,6 @@ class SearchResult {
 }
 
 exports.default = SearchResult;
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-module.exports = require("validator");
 
 /***/ }),
 /* 6 */
@@ -219,7 +219,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(5);
+var _validator = __webpack_require__(3);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -558,13 +558,13 @@ var _product = __webpack_require__(7);
 
 var _product2 = _interopRequireDefault(_product);
 
-var _Authorization = __webpack_require__(3);
+var _Authorization = __webpack_require__(4);
 
 var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(4);
+var _SearchResult = __webpack_require__(5);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
@@ -871,11 +871,11 @@ var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(4);
+var _SearchResult = __webpack_require__(5);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _Authorization = __webpack_require__(3);
+var _Authorization = __webpack_require__(4);
 
 var _categories = __webpack_require__(22);
 
@@ -1053,7 +1053,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(5);
+var _validator = __webpack_require__(3);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -1130,13 +1130,13 @@ var _specification = __webpack_require__(25);
 
 var _specification2 = _interopRequireDefault(_specification);
 
-var _Authorization = __webpack_require__(3);
+var _Authorization = __webpack_require__(4);
 
 var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(4);
+var _SearchResult = __webpack_require__(5);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
@@ -1361,7 +1361,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(5);
+var _validator = __webpack_require__(3);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -1417,6 +1417,7 @@ routes.get('/all', PurchaseOrderController.searchAll);
 routes.get('', PurchaseOrderController.search);
 routes.put('', PurchaseOrderController.update);
 routes.delete('/:id', PurchaseOrderController.remove);
+routes.get('/all/:id', PurchaseOrderController.getByUserIdNew);
 
 exports.default = routes;
 
@@ -1436,16 +1437,17 @@ exports.remove = remove;
 exports.getById = getById;
 exports.searchAll = searchAll;
 exports.search = search;
+exports.getByUserIdNew = getByUserIdNew;
 
 var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(4);
+var _SearchResult = __webpack_require__(5);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _Authorization = __webpack_require__(3);
+var _Authorization = __webpack_require__(4);
 
 var _QueryFilters = __webpack_require__(6);
 
@@ -1676,13 +1678,13 @@ async function search(req, res) {
         }
         var filters = {};
         if (req.query.Filters != null) {
-            filters = (0, _QueryFilters.QueryFilters)(req.query.Filters, req.query.Context);
+            filters = (0, _QueryFilters.QueryFilters)(req.query.Filters, req.body.Context);
         } else {
-            filters["Context"] = req.query.Context;
+            filters["Context"] = req.body.Context;
         }
 
         var itemRes = await _purchaseorder2.default.find(filters);
-
+        console.log(itemRes);
         var totalcount = itemRes.length;
         var pages = Math.ceil(itemRes.length / req.query.limit);
 
@@ -1706,6 +1708,42 @@ async function search(req, res) {
     }
 }
 
+async function getByUserIdNew(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var searchItem = await _purchaseorder2.default.find({ Context: req.body.Context, UserId: req.params.id, Status: { $ne: 'Completed' } });
+
+        result.items = searchItem;
+        result.totalcount = searchItem.length;
+        result.pages = 1;
+        result.message = 'Successfully retrieve records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = null;
+        result.totalcount = null;
+        result.pages = 0;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
 /***/ }),
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -1721,7 +1759,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(5);
+var _validator = __webpack_require__(3);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -1823,11 +1861,11 @@ var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(4);
+var _SearchResult = __webpack_require__(5);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _Authorization = __webpack_require__(3);
+var _Authorization = __webpack_require__(4);
 
 var _QueryFilters = __webpack_require__(6);
 
@@ -2054,7 +2092,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(5);
+var _validator = __webpack_require__(3);
 
 var _validator2 = _interopRequireDefault(_validator);
 
